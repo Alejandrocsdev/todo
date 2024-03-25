@@ -1,31 +1,39 @@
+// MODULE
 const express = require('express')
+// EXPRESS
 const app = express()
+// SERVER
 const port = 3000
+// DATABASE
+const db = require('./models')
+const Todo = db.Todo
 
 app.get('/todos', (req, res) => {
-	res.send('get all todos')
+  return Todo.findAll()
+    .then((todos) => res.send({ todos }))
+    .catch((err) => res.status(422).json(err))
 })
 
 app.get('/todos/new', (req, res) => {
-	res.send('create todo')
+  res.send('create todo')
 })
 
 app.post('/todos', (req, res) => {
-	res.send('add todo')
+  res.send('add todo')
 })
 
 app.get('/todos/:id', (req, res) => {
-	res.send(`get todo: ${req.params.id}`)
+  res.send(`get todo: ${req.params.id}`)
 })
 
 app.get('/todos/:id/edit', (req, res) => {
-	res.send(`get todo edit: ${req.params.id}`)
+  res.send(`get todo edit: ${req.params.id}`)
 })
 
 app.put('/todos/:id', (req, res) => {
-	res.send('modify todo')
+  res.send('modify todo')
 })
 
 app.delete('/todos/:id', (req, res) => {
-	res.send('delete todo')
+  res.send('delete todo')
 })
