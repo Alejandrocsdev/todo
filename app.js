@@ -2,6 +2,8 @@
 const express = require('express')
 const { engine } = require('express-handlebars')
 const methodOverride = require('method-override')
+const flash = require('connect-flash')
+const session = require('express-session')
 // EXPRESS
 const app = express()
 // SERVER
@@ -16,18 +18,23 @@ app.set('views', './views')
 // MIDDLEWARE
 app.use(express.urlencoded({ extended: true })) // post data
 app.use(methodOverride('_method')) // put patch delete
+app.use(session({
+	secret: 'ThisIsSecret',
+	resave: false,
+	saveUninitialized: false
+}))
+app.use(flash())
 
 app.get('/', (req, res) => {
   res.render('index')
 })
 
 app.get('/todos', (req, res) => {
-  return Todo.findAll({
-    attributes: ['id', 'name', 'isComplete'],
-    raw: true
-  })
-    .then((todos) => res.render('todos', { todos }))
-    .catch((err) => res.status(422).json(err))
+	return Todo.findAll({
+		attributes: ['id', 'name', 'isComplete'],
+		raw: true
+	})
+		.then((todos) => res.render('todos', { todos, message: req.flash('success') }))
 })
 
 app.get('/todos/new', (req, res) => {
@@ -35,11 +42,13 @@ app.get('/todos/new', (req, res) => {
 })
 
 app.post('/todos', (req, res) => {
-  const name = req.body.name
+	const name = req.body.name
 
-  return Todo.create({ name })
-    .then(() => res.redirect('/todos'))
-    .catch((err) => console.log(err))
+	return Todo.create({ name })
+		.then(() => {
+			req.flash('success', '新增成功!')
+			return res.redirect('/todos')
+		})
 })
 
 app.get('/todos/:id', (req, res) => {
