@@ -1,5 +1,6 @@
 // MODULE
 const express = require('express')
+const { engine } = require('express-handlebars')
 // EXPRESS
 const app = express()
 // SERVER
@@ -7,6 +8,14 @@ const port = 3000
 // DATABASE
 const db = require('./models')
 const Todo = db.Todo
+// TEMPLATE-ENGINE
+app.engine('.hbs', engine({ extname: '.hbs' }))
+app.set('view engine', '.hbs')
+app.set('views', './views')
+
+app.get('/', (req, res) => {
+	res.render('index')
+})
 
 app.get('/todos', (req, res) => {
   return Todo.findAll()
@@ -36,4 +45,9 @@ app.put('/todos/:id', (req, res) => {
 
 app.delete('/todos/:id', (req, res) => {
   res.send('delete todo')
+})
+
+app.listen(port, () => {
+  console.log(`http://localhost:${port}`)
+  console.log(`http://localhost:${port}/todos`)
 })
