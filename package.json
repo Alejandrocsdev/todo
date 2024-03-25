@@ -12,6 +12,7 @@
   "dependencies": {
     "express": "^4.19.1",
     "express-handlebars": "^7.1.2",
+    "method-override": "^3.0.0",
     "mysql2": "^3.9.2",
     "sequelize": "^6.37.1",
     "sequelize-cli": "^6.6.2"
