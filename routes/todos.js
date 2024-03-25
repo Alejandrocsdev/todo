@@ -11,9 +11,7 @@ router.get('/', (req, res) => {
       attributes: ['id', 'name', 'isComplete'],
       raw: true
     })
-      .then((todos) =>
-        res.render('todos', { todos, message: req.flash('success'), error: req.flash('error') })
-      )
+      .then((todos) => res.render('todos', { todos, error: req.flash('error') }))
       .catch((error) => {
         console.error(error)
         req.flash('error', '資料取得失敗:(')
@@ -27,55 +25,43 @@ router.get('/', (req, res) => {
 })
 
 router.get('/new', (req, res) => {
-  try {
-    return res.render('new', { error: req.flash('error') })
-  } catch (error) {
-    console.error(error)
-    req.flash('error', '伺服器錯誤')
-    return res.redirect('back')
-  }
+  return res.render('new')
 })
 
-router.post('/', (req, res) => {
-  try {
-    const name = req.body.name
+router.post('/', (req, res, next) => {
+  const name = req.body.name
 
-    return Todo.create({ name })
-      .then(() => {
-        req.flash('success', '新增成功!')
-        return res.redirect('/todos')
-      })
-      .catch((error) => {
-        console.error(error)
-        req.flash('error', '新增失敗:(')
-        return res.redirect('back')
-      })
-  } catch (error) {
-    console.error(error)
-    req.flash('error', '新增失敗:(')
-    return res.redirect('back')
-  }
+  return Todo.create({ name })
+    .then(() => {
+      req.flash('success', '新增成功!')
+      return res.redirect('/todos')
+    })
+    .catch((error) => {
+      error.errorMessage = '新增失敗:('
+      next(error)
+    })
 })
 
 router.get('/:id', (req, res) => {
-  try {
+  // try {
     const id = req.params.id
 
     return Todo.findByPk(id, {
       attributes: ['id', 'name', 'isComplete'],
       raw: true
     })
-      .then((todo) => res.render('todo', { todo, message: req.flash('success') }))
-      .catch((error) => {
-        console.error(error)
-        req.flash('error', '資料取得失敗:(')
-        return res.redirect('back')
-      })
-  } catch (error) {
-    console.error(error)
-    req.flash('error', '伺服器錯誤')
-    return res.redirect('back')
-  }
+      .then((todo) => res.render('todo', { todo }))
+      // .catch((error) => {
+      //   console.error(error)
+      //   req.flash('error', '資料取得失敗:(')
+      //   return res.redirect('back')
+      // })
+  // } 
+  // catch (error) {
+  //   console.error(error)
+  //   req.flash('error', '伺服器錯誤')
+  //   return res.redirect('back')
+  // }
 })
 
 router.get('/:id/edit', (req, res) => {
@@ -99,8 +85,7 @@ router.get('/:id/edit', (req, res) => {
   }
 })
 
-router.put('/:id', (req, res) => {
-  try {
+router.put('/:id', (req, res, next) => {
     const { name, isComplete } = req.body
     const id = req.params.id
 
@@ -110,15 +95,9 @@ router.put('/:id', (req, res) => {
         return res.redirect(`/todos/${id}`)
       })
       .catch((error) => {
-        console.error(error)
-        req.flash('error', '更新失敗:(')
-        return res.redirect('back')
+        error.errorMessage = '更新失敗:('
+        next(error)
       })
-  } catch (error) {
-    console.error(error)
-    req.flash('error', '伺服器錯誤')
-    return res.redirect('back')
-  }
 })
 
 router.delete('/:id', (req, res) => {

@@ -4,6 +4,9 @@ const { engine } = require('express-handlebars')
 const methodOverride = require('method-override')
 const flash = require('connect-flash')
 const session = require('express-session')
+
+const messageHandler = require('./middlewares/message-handler')
+const errorHandler = require('./middlewares/error-handler')
 // ROUTES
 const router = require('./routes') // 引用路由器
 // EXPRESS
@@ -26,7 +29,9 @@ app.use(session({
 	saveUninitialized: false
 }))
 app.use(flash())
+app.use(messageHandler)
 app.use(router) // 將 request 導入路由器
+app.use(errorHandler)
 
 app.listen(port, () => {
   console.log(`http://localhost:${port}/todos`)
