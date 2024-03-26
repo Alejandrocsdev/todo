@@ -6,22 +6,25 @@ const db = require('../models')
 const Todo = db.Todo
 
 router.get('/', (req, res) => {
-  try {
-    return Todo.findAll({
-      attributes: ['id', 'name', 'isComplete'],
-      raw: true
-    })
-      .then((todos) => res.render('todos', { todos, error: req.flash('error') }))
-      .catch((error) => {
-        console.error(error)
-        req.flash('error', '資料取得失敗:(')
-        return res.redirect('back')
+  const page = parseInt(req.query.page) || 1
+  const limit = 10
+  return Todo.findAll({
+    attributes: ['id', 'name', 'isComplete'],
+    raw: true
+  })
+    .then((todos) => {
+      req.flash('success', '資料取得成功!')
+      return res.render('todos', {
+        todos: todos.slice((page - 1) * limit, page * limit),
+        prev: page > 1 ? page - 1 : page,
+        next: page + 1,
+        page
       })
-  } catch (error) {
-    console.error(error)
-    req.flash('error', '伺服器錯誤')
-    return res.redirect('back')
-  }
+    })
+    .catch((error) => {
+      error.errorMessage = '資料取得失敗:('
+      next(error)
+    })
 })
 
 router.get('/new', (req, res) => {
@@ -42,83 +45,68 @@ router.post('/', (req, res, next) => {
     })
 })
 
-router.get('/:id', (req, res) => {
-  // try {
-    const id = req.params.id
+router.get('/:id', (req, res, next) => {
+  const id = req.params.id
 
-    return Todo.findByPk(id, {
-      attributes: ['id', 'name', 'isComplete'],
-      raw: true
+  return Todo.findByPk(id, {
+    attributes: ['id', 'name', 'isComplete'],
+    raw: true
+  })
+    .then((todo) => {
+      req.flash('success', '資料取得成功!')
+      return res.render('todo', { todo })
     })
-      .then((todo) => res.render('todo', { todo }))
-      // .catch((error) => {
-      //   console.error(error)
-      //   req.flash('error', '資料取得失敗:(')
-      //   return res.redirect('back')
-      // })
-  // } 
-  // catch (error) {
-  //   console.error(error)
-  //   req.flash('error', '伺服器錯誤')
-  //   return res.redirect('back')
-  // }
+    .catch((error) => {
+      error.errorMessage = '資料取得失敗:('
+      next(error)
+    })
 })
 
 router.get('/:id/edit', (req, res) => {
-  try {
-    const id = req.params.id
+  // try {
+  const id = req.params.id
 
-    return Todo.findByPk(id, {
-      attributes: ['id', 'name', 'isComplete'],
-      raw: true
+  return Todo.findByPk(id, {
+    attributes: ['id', 'name', 'isComplete'],
+    raw: true
+  })
+    .then((todo) => {
+      req.flash('success', '資料取得成功!')
+      return res.render('edit', { todo })
     })
-      .then((todo) => res.render('edit', { todo, error: req.flash('error') }))
-      .catch((error) => {
-        console.error(error)
-        req.flash('error', '資料取得失敗:(')
-        return res.redirect('back')
-      })
-  } catch (error) {
-    console.error(error)
-    req.flash('error', '伺服器錯誤')
-    return res.redirect('back')
-  }
+    .catch((error) => {
+      error.errorMessage = '資料取得失敗:('
+      next(error)
+    })
 })
 
 router.put('/:id', (req, res, next) => {
-    const { name, isComplete } = req.body
-    const id = req.params.id
+  const { name, isComplete } = req.body
+  const id = req.params.id
 
-    return Todo.update({ name, isComplete: isComplete === 'completed' }, { where: { id } })
-      .then(() => {
-        req.flash('success', '更新成功!')
-        return res.redirect(`/todos/${id}`)
-      })
-      .catch((error) => {
-        error.errorMessage = '更新失敗:('
-        next(error)
-      })
+  return Todo.update({ name, isComplete: isComplete === 'completed' }, { where: { id } })
+    .then(() => {
+      req.flash('success', '更新成功!')
+      return res.redirect(`/todos/${id}`)
+    })
+    .catch((error) => {
+      error.errorMessage = '更新失敗:('
+      next(error)
+    })
 })
 
 router.delete('/:id', (req, res) => {
-  try {
-    const id = req.params.id
+  const id = req.params.id
 
-    return Todo.destroy({ where: { id } })
-      .then(() => {
-        req.flash('success', '刪除成功!')
-        return res.redirect('/todos')
-      })
-      .catch((error) => {
-        console.error(error)
-        req.flash('error', '刪除失敗:(')
-        return res.redirect('back')
-      })
-  } catch (error) {
-    console.error(error)
-    req.flash('error', '刪除失敗:(')
-    return res.redirect('back')
-  }
+  return Todo.destroy({ where: { id } })
+    .then(() => {
+      req.flash('success', '刪除成功!')
+      return res.redirect('/todos')
+    })
+    .catch((error) => {
+      error.errorMessage = '刪除失敗:('
+      next(error)
+    })
 })
 
 module.exports = router
