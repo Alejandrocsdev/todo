@@ -4,7 +4,9 @@ const { engine } = require('express-handlebars')
 const methodOverride = require('method-override')
 const flash = require('connect-flash')
 const session = require('express-session')
-
+if (process.env.NODE_ENV === 'development') {
+  require('dotenv').config()
+}
 const messageHandler = require('./middlewares/message-handler')
 const errorHandler = require('./middlewares/error-handler')
 // ROUTES
@@ -23,11 +25,14 @@ app.set('views', './views')
 // MIDDLEWARE
 app.use(express.urlencoded({ extended: true })) // post data
 app.use(methodOverride('_method')) // put patch delete
-app.use(session({
-	secret: 'ThisIsSecret',
-	resave: false,
-	saveUninitialized: false
-}))
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false
+  })
+)
+console.log(process.env.SESSION_SECRET)
 app.use(flash())
 app.use(messageHandler)
 app.use(router) // 將 request 導入路由器
